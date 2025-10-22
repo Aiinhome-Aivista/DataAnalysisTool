@@ -1,5 +1,5 @@
 import React from 'react';
-import '../style/loader.css';
+import '../../style/loader.css';
 
 export default function Loader() {
     return (
