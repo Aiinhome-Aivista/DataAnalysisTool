@@ -81,6 +81,9 @@ function Datatable() {
         if (col.field === 'SESSION_STATUS' && value === 'Success') {
             return 'Completed';
         }
+        if (col.field === 'RELATIONSHIPS') {
+            return 'Done';
+        }
         return value == null || value === '' ? '--' : value;
     };
 
@@ -88,7 +91,7 @@ function Datatable() {
         <div className="flex flex-col gap-4 w-full">
             <div className="flex flex-row items-center justify-end mt-6 gap-4">
                 {/* Search */}
-                <div className="relative w-1/4">
+                <div className="relative w-1/3">
                     <input
                         type="text"
                         placeholder="Search content"
