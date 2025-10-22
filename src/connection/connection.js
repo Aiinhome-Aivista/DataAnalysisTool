@@ -10,4 +10,5 @@ export const POST_url = {
 
 export const GET_url = {
     TableTracker: `${API_BASE_URL}/tracker`,
+    viewInfo: (sessionName) => `${API_BASE_URL}/view_info?session_name=${sessionName}`,
 };

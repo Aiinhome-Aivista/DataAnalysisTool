@@ -8,6 +8,7 @@ export function ContextProvider({ children }) {
     const [dataTypes, setDataTypes] = useState([])
     const [insights, setInsights] = useState([]);
     const [graphUrl, setGraphUrl] = useState([]);
+    const [loadingView, setLoadingView] = useState(false);
 
     return (
         <Context.Provider value={{
@@ -17,6 +18,7 @@ export function ContextProvider({ children }) {
             dataTypes, setDataTypes,
             insights, setInsights,
             graphUrl, setGraphUrl,
+            loadingView, setLoadingView,
         }}>
             {children}
         </Context.Provider>
