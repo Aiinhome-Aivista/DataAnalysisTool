@@ -57,3 +57,67 @@ html, body {
   background: #1C2333;
   color: #ffffff;
 }
+
+/* PrimeReact Paginator Customization */
+
+/* Paginator container */
+.p-paginator {
+  background: #1a202c;
+  color: #e2e8f0;
+  border: 1px solid #1a202c;
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+}
+
+/* Paginator buttons (pages, next, prev, etc.) */
+.p-paginator .p-paginator-element {
+  color: #94a3b8;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+/* Hover state for paginator buttons */
+.p-paginator .p-paginator-element:not(.p-disabled):hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+/* Active page button */
+.p-paginator .p-paginator-element.p-highlight {
+  background: #334155;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* Rows per page dropdown */
+.p-paginator .p-dropdown {
+  background: #1a202c;
+  border: 1px solid #4a5568;
+  height: 2.5rem;
+  border-radius: 6px;
+}
+
+/* Paginator Dropdown Panel */
+.p-dropdown-panel {
+  background: #1e293b;
+  border: 1px solid #4a5568;
+}
+
+/* Paginator Dropdown Items */
+.p-dropdown-panel .p-dropdown-item {
+  color: #f1f5f9;
+}
+
+/* Hover state for dropdown items */
+.p-dropdown-panel .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+/* Highlighted/selected dropdown item */
+.p-dropdown-panel .p-dropdown-item.p-highlight {
+  background: #334155;
+  color: #f1f5f9;
+}

@@ -3,16 +3,14 @@ import { DataTable } from 'primereact/datatable';
 import { Eye, Trash2, Search, RefreshCw } from 'lucide-react';
 import { Column } from 'primereact/column';
 import { useNavigate } from "react-router-dom";
-import { apiService } from '../../../service/ApiService';
-import { GET_url } from '../../../connection/connection';
+import Loader from '../../../common/components/Loader';
+import { useTableTrackerData } from '../../../data/useTableTrackerData';
 
 function Datatable() {
     const navigate = useNavigate();
-    const [data, setData] = useState([]);
+    const { data, loading, fetchTrackerData } = useTableTrackerData();
     const [filteredData, setFilteredData] = useState([]);
     const [search, setSearch] = useState('');
-    const [loading, setLoading] = useState(true);
-
 
     const columns = [
         { field: 'SESSION_NAME', header: 'Session Name' },
@@ -24,27 +22,6 @@ function Datatable() {
         { field: 'SESSION_STATUS', header: 'Status' },
         { field: 'action', header: 'Action' },
     ];
-
-    const fetchTrackerData = async () => {
-        setLoading(true); // For the refresh button icon
-        try {
-            const response = await apiService({ url: GET_url.TableTracker });
-            if (response && response.status === 'success' && Array.isArray(response.data)) {
-                setData(response.data);
-            } else {
-                console.error("Failed to fetch tracker data or data is not in the expected format:", response);
-                setData([]); // Set to empty array on failure
-            }
-        } catch (error) {
-            console.error("API error while fetching tracker data:", error);
-            setData([]); // Also set to empty array on API error
-        }
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchTrackerData();
-    }, []);
 
     useEffect(() => {
         let filtered = [...data];
@@ -112,7 +89,17 @@ function Datatable() {
                 </div>
             </div>
 
-            <DataTable value={filteredData} className="w-full" rowHover loading={loading}>
+            <DataTable
+                value={filteredData}
+                className="w-full"
+                rowHover
+                emptyMessage={loading ? <Loader /> : "No sessions found."}
+                paginator
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+            >
                 {columns.map((col, i) => {
                     if (col.field === 'action') {
                         return <Column key={col.field} header={col.header} body={actionBodyTemplate} />;
