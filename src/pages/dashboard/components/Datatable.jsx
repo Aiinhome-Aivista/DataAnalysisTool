@@ -86,7 +86,7 @@ function Datatable() {
 
     return (
         <div className="flex flex-col gap-4 w-full">
-            <div className="flex flex-row items-center justify-between mt-6 gap-4">
+            <div className="flex flex-row items-center justify-end mt-6 gap-4">
                 {/* Search */}
                 <div className="relative w-1/4">
                     <input
