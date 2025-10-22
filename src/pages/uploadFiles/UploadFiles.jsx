@@ -117,32 +117,39 @@ const handleUpload = async () => {
 
   setIsUploading(true);
 
+  // ✅ Append session_name and files
   const formData = new FormData();
-  formData.append("sessionName", sessionName);
-  files.forEach((file) => {
-    formData.append("files", file);
-  });
+  formData.append("session_name", sessionName);
+  files.forEach((file) => formData.append("files", file));
 
   try {
-    // 1️⃣ Call dataTypes API
+    // 1️⃣ Call Data Types API
     const data_types_response = await apiService({
       url: POST_url.dataTypes,
       method: "POST",
       data: formData,
     });
 
+    console.log("🧩 Data Types API response:", data_types_response);
+
     if (data_types_response.error) {
-      throw new Error(data_types_response.message);
+      throw new Error(data_types_response.message || "Data Types API failed");
     }
 
-    const transformed = Object.entries(data_types_response.files).map(
+    // ✅ Safely handle nested structure: results.files
+    if (!data_types_response?.results?.files) {
+      throw new Error("Invalid response: 'results.files' not found in Data Types API");
+    }
+
+    const transformed = Object.entries(data_types_response.results.files).map(
       ([fileName, fileData]) => {
-        const columns = Object.values(fileData.metadata).map((colMeta) => {
+        const columns = Object.values(fileData.metadata || {}).map((colMeta) => {
           const comparisonMeta = fileData.comparison?.[colMeta.column_name] || {};
 
           return {
             column_name: colMeta.column_name,
-            inferred_sql_type: colMeta.technical_metadata?.inferred_sql_type || "",
+            inferred_sql_type:
+              colMeta.technical_metadata?.inferred_sql_type || "",
             contextual_summary: comparisonMeta.contextual_summary || "",
             technical_summary: comparisonMeta.technical_summary || "",
             differences: Array.isArray(colMeta.differences)
@@ -156,63 +163,66 @@ const handleUpload = async () => {
           };
         });
 
-        return {
-          table_name: fileName,
-          columns,
-        };
+        return { table_name: fileName, columns };
       }
     );
 
+    // ✅ Store transformed data
     setDataTypes(transformed);
-
-    if (data_types_response.relationships) {
-      setRelationships(data_types_response.relationships);
+    if (data_types_response.results.relationships) {
+      setRelationships(data_types_response.results.relationships);
     }
 
-    // 2️⃣ Call insights API
+    // 2️⃣ Call Insights API
     const insights_response = await apiService({
       url: POST_url.insights,
       method: "POST",
       data: formData,
     });
 
+    console.log("📊 Insights API response:", insights_response);
+
     if (insights_response?.insights) {
       setInsights(insights_response.insights);
     }
 
-    // 3️⃣ Call uploads API LAST
- const upload_response = await apiService({
-  url: POST_url.uploads,
-  method: "POST",
-  data: formData,
-});
+    // 3️⃣ Call Uploads API
+    const upload_response = await apiService({
+      url: POST_url.uploads,
+      method: "POST",
+      data: formData,
+    });
 
-if (upload_response.error) {
-  throw new Error(upload_response.message);
-}
-if (upload_response.html_url) {
-  setGraphUrl(upload_response.html_url); 
-}
+    console.log("📁 Uploads API response:", upload_response);
 
-  // ✅ 4️⃣ Call Chat Insights Upload API (LAST)
+    if (upload_response.error) {
+      throw new Error(upload_response.message || "Uploads API failed");
+    }
+
+    if (upload_response.html_url) {
+      setGraphUrl(upload_response.html_url);
+    }
+
+    // 4️⃣ Chat Insights Upload API
     const chatInsightsUpload = await apiService({
       url: "http://122.163.121.176:3029/upload_files",
       method: "POST",
       data: formData,
     });
 
+    console.log("💬 Chat Insights Upload response:", chatInsightsUpload);
+
     if (chatInsightsUpload.error) {
       console.warn("Chat Insights upload failed:", chatInsightsUpload.message);
     } else {
       console.log("✅ Chat Insights files uploaded successfully!");
-
-      // ✅ Store session_id globally (for next pages)
       if (chatInsightsUpload.session_id) {
         localStorage.setItem("session_id", chatInsightsUpload.session_id);
         console.log("✅ Session ID saved:", chatInsightsUpload.session_id);
       }
     }
 
+    // ✅ Navigate to Analysis page
     navigate("/analysis");
   } catch (error) {
     console.error("Upload failed:", error);
@@ -221,7 +231,6 @@ if (upload_response.html_url) {
     setIsUploading(false);
   }
 };
-
 
 
   return (

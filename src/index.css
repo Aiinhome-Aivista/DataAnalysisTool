@@ -30,3 +30,30 @@ html, body {
     width: 0.3rem;
     top: 0;
 }
+
+
+ /* PrimeReact DataTable Customization*/
+
+/* Header background and text color */
+.p-datatable .p-datatable-thead > tr > th {
+  background: #1e293b; /* A darker gray */
+  color: #ffffff;
+}
+
+/* All row background and text color */
+.p-datatable .p-datatable-tbody > tr {
+  background: #1a202c; /* Even darker blue-gray */
+  color: #e2e8f0;
+}
+
+/* Row hover effect */
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: #334155; /* Your theme's primary purple */
+  color: #ffffff;
+}
+
+/* Selected row color (if you use selection) */
+.p-datatable .p-datatable-tbody > tr.p-highlight {
+  background: #1C2333;
+  color: #ffffff;
+}

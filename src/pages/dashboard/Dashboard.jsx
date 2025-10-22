@@ -1,17 +1,17 @@
-import React from "react";
+import React from 'react';
 import DashboardMainContent from "../dashboard/components/DashboardMainContent";
 import DashboardSidebar from "./components/DashboardSidebar";
-import HowItWorks from "./components/HowItWorks";
+import Datatable from './components/Datatable';
 
 function Dashboard() {
   return (
-    <div className="min-h-[80vh] w-[100%] text-white flex flex-col">
+    <div className="min-h-[80vh] w-[100%] text-white flex flex-col gap-6">
       <div className="flex">
         <DashboardMainContent />
         <DashboardSidebar />
       </div>
-      <div className="flex">
-        <HowItWorks />
+      <div className="flex w-full">
+        <Datatable />
       </div>
     </div>
   );

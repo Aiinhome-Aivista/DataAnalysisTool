@@ -20,21 +20,21 @@ function RecentSessions() {
                     {recentSessions.map((session, idx) => (
                         <div
                             key={idx}
-                            className="flex justify-between items-center bg-slate-900 p-3 hover:bg-slate-800 rounded-sm mb-4"
+                            className="flex justify-between items-center bg-[#1a202c] p-3 hover:bg-[#334155] rounded-sm mb-4"
                         >
 
                             <div>
                                 <p className="font-semibold cursor-default">{session.name}</p>
-                                <p className="text-xs text-slate-400 cursor-default">
+                                <p className="text-xs text-[#94a3b8] cursor-default">
                                     {session.files} files • {session.time}
                                 </p>
                             </div>
                             <div className="flex gap-2">
-                                <button className="p-2 rounded-md bg-[#795effe0] hover:bg-[#795EFF] cursor-pointer"
+                                <button className="p-2 rounded-md bg-[#795eff] hover:bg-[#6a4be8] cursor-pointer"
                                     onClick={() => navigate('/analysis')}>
                                     <Eye className="w-4 h-4" />
                                 </button>
-                                <button className="p-2 rounded-md bg-[#961010e0] hover:bg-[#961010ff] cursor-pointer">
+                                <button className="p-2 rounded-md bg-[#961010] hover:bg-[#7f0e0e] cursor-pointer">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>

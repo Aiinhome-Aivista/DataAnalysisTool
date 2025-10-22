@@ -1,7 +1,7 @@
-const API_BASE_URL ="http://122.163.121.176:3029" 
+const API_BASE_URL = "http://122.163.121.176:3029"
 
 export const POST_url = {
-    dataTypes: `${API_BASE_URL}/analyze`,
+    dataTypes: `${API_BASE_URL}/analyze_files`,
     patterns: `${API_BASE_URL}/patterns`,
     insights: `${API_BASE_URL}/insight`,
     relationships: `${API_BASE_URL}/relationships`,
@@ -9,5 +9,5 @@ export const POST_url = {
 };
 
 export const GET_url = {
-  
+    TableTracker: `${API_BASE_URL}/tracker`,
 };
