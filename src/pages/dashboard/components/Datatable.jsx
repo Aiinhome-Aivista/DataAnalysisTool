@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Eye, Trash2, Search, RefreshCw } from 'lucide-react';
 import { Column } from 'primereact/column';
@@ -6,13 +6,15 @@ import { useNavigate } from "react-router-dom";
 import Loader from '../../../common/components/Loader';
 import { useTableTrackerData } from '../../../data/useTableTrackerData';
 import { GET_url } from '../../../connection/connection';
+import { Context } from '../../../common/helper/Context';
 
 function Datatable() {
     const navigate = useNavigate();
     const { data, loading, fetchTrackerData } = useTableTrackerData();
     const [filteredData, setFilteredData] = useState([]);
     const [search, setSearch] = useState('');
-    const [viewLoading, setViewLoading] = useState(false);
+    const [loadingSession, setLoadingSession] = useState(null); // Track loading by session name
+    const { setPatterns, setRelationships, setDataTypes, setInsights, setGraphUrl } = useContext(Context)
 
     const columns = [
         { field: 'SESSION_NAME', header: 'Session Name' },
@@ -49,46 +51,58 @@ function Datatable() {
         }
 
         try {
-            setViewLoading(true);
+            setLoadingSession(sessionName); // Set loading for this specific row
             const response = await fetch(GET_url.viewInfo(sessionName));
             if (!response.ok) throw new Error("Failed to fetch view info");
 
             const result = await response.json();
-            console.log("api response:",result);
 
-            // ✅ Optionally store this data (e.g., in localStorage or Context)
-            localStorage.setItem("viewInfo", JSON.stringify(result));
+            // The API response is nested inside `data[0].response`
+            const responseData = result.data[0].response;
+            const fileName = Object.keys(responseData.files)[0]; // Get the first file name
+            const fileData = responseData.files[fileName];
 
-            // ✅ Navigate to /analysis page
-            navigate('/analysis', { state: { sessionName, viewData: result } });
+            // Set all context states from the single response
+            setPatterns(fileData.comparison);
+            setDataTypes(fileData.metadata);
+            setRelationships(responseData.relationships);
+            setInsights(result.insights.insights);
+            setGraphUrl(result.graph_url);
+
+            // Also save session_id for chat insights if it exists
+            if (result.session_id) {
+                localStorage.setItem("session_id", result.session_id);
+            }
+            navigate('/analysis');
         } catch (error) {
             console.error("Error fetching view info:", error);
             alert("Failed to load session details.");
         } finally {
-            setViewLoading(false);
+            setLoadingSession(null); // Clear loading state
         }
     };
 
-    const actionBodyTemplate = (rowData) => (
-        <div className="flex gap-2">
-            <button
-                className={`w-8 h-8 flex items-center justify-center rounded-md ${
-                    viewLoading
+    const actionBodyTemplate = (rowData) => {
+        const isCurrentRowLoading = loadingSession === rowData.SESSION_NAME;
+        return (
+            <div className="flex gap-2">
+                <button
+                    className={`w-8 h-8 flex items-center justify-center rounded-md cursor-pointer ${isCurrentRowLoading
                         ? 'bg-gray-500 cursor-not-allowed'
                         : 'bg-[#795eff] hover:bg-[#6a4be8]'
-                }`}
-                disabled={viewLoading}
-                onClick={() => handleViewClick(rowData)}
-            >
-                <Eye className="w-4 h-4" />
-            </button>
+                        }`}
+                    disabled={isCurrentRowLoading || loadingSession} // Disable if this or any other row is loading
+                    onClick={() => handleViewClick(rowData)}
+                >
+                    <Eye className="w-4 h-4" />
+                </button>
 
-            <button className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e] cursor-pointer">
-                <Trash2 className="w-4 h-4" />
-            </button>
-        </div>
-    );
-
+                <button className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e] cursor-pointer">
+                    <Trash2 className="w-4 h-4" />
+                </button>
+            </div>
+        );
+    };
     const defaultBodyTemplate = (rowData, col) => {
         const value = rowData[col.field];
         if (col.field === 'SESSION_STATUS' && value === 'Success') return 'Completed';
@@ -113,9 +127,8 @@ function Datatable() {
 
                 {/* Refresh Button */}
                 <div
-                    className={`relative text-center border border-[#4a5568] rounded-lg w-10 h-10 flex items-center justify-center transition-colors ${
-                        loading ? 'bg-[#334155] cursor-not-allowed' : 'bg-[#1e293b] cursor-pointer hover:bg-[#334155]'
-                    }`}
+                    className={`relative text-center border border-[#4a5568] rounded-lg w-10 h-10 flex items-center justify-center transition-colors ${loading ? 'bg-[#334155] cursor-not-allowed' : 'bg-[#1e293b] cursor-pointer hover:bg-[#334155]'
+                        }`}
                     onClick={loading ? undefined : fetchTrackerData}
                 >
                     <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-white' : 'text-[#94a3b8] hover:text-white'}`} />
