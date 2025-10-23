@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Eye, Trash2, Search, RefreshCw } from 'lucide-react';
 import { Column } from 'primereact/column';
 import { useNavigate } from "react-router-dom";
 import Loader from '../../../common/components/Loader';
 import { useTableTrackerData } from '../../../data/useTableTrackerData';
+import { GET_url } from '../../../connection/connection';
 
 function Datatable() {
     const navigate = useNavigate();
     const { data, loading, fetchTrackerData } = useTableTrackerData();
     const [filteredData, setFilteredData] = useState([]);
     const [search, setSearch] = useState('');
+    const [viewLoading, setViewLoading] = useState(false);
 
     const columns = [
         { field: 'SESSION_NAME', header: 'Session Name' },
@@ -26,12 +28,11 @@ function Datatable() {
     useEffect(() => {
         let filtered = [...data];
 
-        // Filter by search term
         if (search) {
-            const lowercasedSearch = search.toLowerCase();
+            const lower = search.toLowerCase();
             filtered = filtered.filter(item =>
                 Object.values(item).some(val =>
-                    String(val).toLowerCase().includes(lowercasedSearch)
+                    String(val).toLowerCase().includes(lower)
                 )
             );
         }
@@ -39,35 +40,66 @@ function Datatable() {
         setFilteredData(filtered);
     }, [data, search]);
 
-    const actionBodyTemplate = (rowData) => {
-        return (
-            <div className="flex gap-2">
-                <button className="w-8 h-8 flex items-center justify-center rounded-md bg-[#795eff] hover:bg-[#6a4be8] cursor-pointer"
-                    onClick={() => navigate('/analysis')}>
-                    <Eye className="w-4 h-4" />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e] cursor-pointer">
-                    <Trash2 className="w-4 h-4" />
-                </button>
-            </div>
-        );
+    // ✅ Function to call API on "View" click
+    const handleViewClick = async (rowData) => {
+        const sessionName = rowData.SESSION_NAME;
+        if (!sessionName) {
+            alert("Session name missing!");
+            return;
+        }
+
+        try {
+            setViewLoading(true);
+            const response = await fetch(GET_url.viewInfo(sessionName));
+            if (!response.ok) throw new Error("Failed to fetch view info");
+
+            const result = await response.json();
+            console.log("api response:",result);
+
+            // ✅ Optionally store this data (e.g., in localStorage or Context)
+            localStorage.setItem("viewInfo", JSON.stringify(result));
+
+            // ✅ Navigate to /analysis page
+            navigate('/analysis', { state: { sessionName, viewData: result } });
+        } catch (error) {
+            console.error("Error fetching view info:", error);
+            alert("Failed to load session details.");
+        } finally {
+            setViewLoading(false);
+        }
     };
+
+    const actionBodyTemplate = (rowData) => (
+        <div className="flex gap-2">
+            <button
+                className={`w-8 h-8 flex items-center justify-center rounded-md ${
+                    viewLoading
+                        ? 'bg-gray-500 cursor-not-allowed'
+                        : 'bg-[#795eff] hover:bg-[#6a4be8]'
+                }`}
+                disabled={viewLoading}
+                onClick={() => handleViewClick(rowData)}
+            >
+                <Eye className="w-4 h-4" />
+            </button>
+
+            <button className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e] cursor-pointer">
+                <Trash2 className="w-4 h-4" />
+            </button>
+        </div>
+    );
 
     const defaultBodyTemplate = (rowData, col) => {
         const value = rowData[col.field];
-        if (col.field === 'SESSION_STATUS' && value === 'Success') {
-            return 'Completed';
-        }
-        if (col.field === 'RELATIONSHIPS') {
-            return 'Done';
-        }
+        if (col.field === 'SESSION_STATUS' && value === 'Success') return 'Completed';
+        if (col.field === 'RELATIONSHIPS') return 'Done';
         return value == null || value === '' ? '--' : value;
     };
 
     return (
         <div className="flex flex-col gap-4 w-full">
             <div className="flex flex-row items-center justify-end mt-6 gap-4">
-                {/* Search */}
+                {/* Search Input */}
                 <div className="relative w-1/3">
                     <input
                         type="text"
@@ -76,16 +108,17 @@ function Datatable() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <Search
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#94a3b8] cursor-default"
-                    />
+                    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#94a3b8]" />
                 </div>
 
+                {/* Refresh Button */}
                 <div
-                    className={`relative text-center border border-[#4a5568] rounded-lg w-10 h-10 flex items-center justify-center transition-colors ${loading ? 'bg-[#334155] cursor-not-allowed' : 'bg-[#1e293b] cursor-pointer hover:bg-[#334155]'}`}
+                    className={`relative text-center border border-[#4a5568] rounded-lg w-10 h-10 flex items-center justify-center transition-colors ${
+                        loading ? 'bg-[#334155] cursor-not-allowed' : 'bg-[#1e293b] cursor-pointer hover:bg-[#334155]'
+                    }`}
                     onClick={loading ? undefined : fetchTrackerData}
                 >
-                    <RefreshCw className={`w-5 h-5 transition-colors ${loading ? 'animate-spin text-white' : 'text-[#94a3b8] hover:text-white'}`} />
+                    <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-white' : 'text-[#94a3b8] hover:text-white'}`} />
                 </div>
             </div>
 
@@ -100,12 +133,11 @@ function Datatable() {
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
             >
-                {columns.map((col, i) => {
-                    if (col.field === 'action') {
-                        return <Column key={col.field} header={col.header} body={actionBodyTemplate} />;
-                    }
-                    return <Column key={col.field} field={col.field} header={col.header} body={defaultBodyTemplate} />;
-                })}
+                {columns.map((col) =>
+                    col.field === 'action'
+                        ? <Column key={col.field} header={col.header} body={actionBodyTemplate} />
+                        : <Column key={col.field} field={col.field} header={col.header} body={defaultBodyTemplate} />
+                )}
             </DataTable>
         </div>
     );
