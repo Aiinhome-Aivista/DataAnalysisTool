@@ -27,13 +27,14 @@ function UploadFiles() {
 
     setIsUploading(true);
 
-    const formData = new FormData();
-    formData.append("session_name", sessionName);
-    files.forEach((file) => formData.append("files", file));
-
     // ✅ Helper to call API safely
     const callApi = async (url, name) => {
       try {
+        // Create a new FormData for each request
+        const formData = new FormData();
+        formData.append("session_name", sessionName);
+        files.forEach((file) => formData.append("files", file));
+
         const response = await apiService({ url, method: "POST", data: formData });
         console.log(`✅ ${name} response:`, response);
         return response;
@@ -44,6 +45,7 @@ function UploadFiles() {
 
     // ✅ Navigate immediately
     navigate("/");
+    setFiles([]); // Clear files from the UI immediately
 
     // Run all API calls in parallel and wait for them to complete
     try {
@@ -98,7 +100,6 @@ function UploadFiles() {
       console.error("An error occurred during file upload:", error);
     } finally {
       // ✅ This block will run after all uploads are finished or if an error occurs.
-      setFiles([]); // Clear files from the UI
       setIsUploading(false); // Reset uploading state
     }
   };
