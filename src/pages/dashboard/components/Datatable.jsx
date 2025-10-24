@@ -11,9 +11,9 @@ import { Context } from "../../../common/helper/Context";
 export default function Datatable() {
   const navigate = useNavigate();
   const { data, loading, fetchTrackerData } = useTableTrackerData();
-  const { 
-    updateSessionData, 
-    setActiveSession 
+  const {
+    updateSessionData,
+    setActiveSession
   } = useContext(Context);
 
   const [search, setSearch] = useState("");
@@ -87,74 +87,73 @@ export default function Datatable() {
     }
   };
 
-//   const actionBodyTemplate = (rowData) => {
-//     const isLoading = loadingSession === rowData.SESSION_NAME;
-//     return (
-//       <div className="flex gap-2">
-//         <button
-//           className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
-//             isLoading ? "bg-gray-500 cursor-not-allowed" : "bg-[#795eff] hover:bg-[#6a4be8]"
-//           }`}
-//           disabled={!!loadingSession}
-//           onClick={() => handleViewClick(rowData)}
-//         >
-//           {isLoading ? (
-//             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-//           ) : (
-//             <Eye className="w-4 h-4 text-white" />
-//           )}
-//         </button>
+  //   const actionBodyTemplate = (rowData) => {
+  //     const isLoading = loadingSession === rowData.SESSION_NAME;
+  //     return (
+  //       <div className="flex gap-2">
+  //         <button
+  //           className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
+  //             isLoading ? "bg-gray-500 cursor-not-allowed" : "bg-[#795eff] hover:bg-[#6a4be8]"
+  //           }`}
+  //           disabled={!!loadingSession}
+  //           onClick={() => handleViewClick(rowData)}
+  //         >
+  //           {isLoading ? (
+  //             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+  //           ) : (
+  //             <Eye className="w-4 h-4 text-white" />
+  //           )}
+  //         </button>
 
-//         <button
-//           className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e]"
-//           onClick={() => alert(`Delete ${rowData.SESSION_NAME} (to be implemented)`)}
-//         >
-//           <Trash2 className="w-4 h-4 text-white" />
-//         </button>
-//       </div>
-//     );
-//   };
+  //         <button
+  //           className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e]"
+  //           onClick={() => alert(`Delete ${rowData.SESSION_NAME} (to be implemented)`)}
+  //         >
+  //           <Trash2 className="w-4 h-4 text-white" />
+  //         </button>
+  //       </div>
+  //     );
+  //   };
 
 
   const actionBodyTemplate = (rowData) => {
-  const isLoading = loadingSession === rowData.SESSION_NAME;
+    const isLoading = loadingSession === rowData.SESSION_NAME;
 
-  // Disable if session not completed
-  const isCompleted =
-    rowData.SESSION_STATUS?.toLowerCase() === "completed" ||
-    rowData.SESSION_STATUS?.toLowerCase() === "success";
+    // Disable if session not completed
+    const isCompleted =
+      rowData.SESSION_STATUS?.toLowerCase() === "completed" ||
+      rowData.SESSION_STATUS?.toLowerCase() === "success";
 
-  const isDisabled = !!loadingSession || !isCompleted;
+    const isDisabled = !!loadingSession || !isCompleted;
 
-  return (
-    <div className="flex gap-2">
-      {/* View Button */}
-      <button
-        className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
-          isDisabled
-            ? "bg-gray-500 cursor-not-allowed"
-            : "bg-[#795eff] hover:bg-[#6a4be8]"
-        }`}
-        disabled={isDisabled}
-        onClick={() => handleViewClick(rowData)}
-      >
-        {isLoading ? (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <Eye className="w-4 h-4 text-white" />
-        )}
-      </button>
+    return (
+      <div className="flex gap-2">
+        {/* View Button */}
+        <button
+          className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${isDisabled
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-[#795eff] hover:bg-[#6a4be8]"
+            }`}
+          disabled={isDisabled}
+          onClick={() => handleViewClick(rowData)}
+        >
+          {isLoading ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Eye className="w-4 h-4 text-white" />
+          )}
+        </button>
 
-      {/* Delete Button */}
-      <button
-        className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e]"
-        onClick={() => alert(`Delete ${rowData.SESSION_NAME} (to be implemented)`)}
-      >
-        <Trash2 className="w-4 h-4 text-white" />
-      </button>
-    </div>
-  );
-};
+        {/* Delete Button */}
+        <button
+          className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e]"
+          onClick={() => alert(`Delete ${rowData.SESSION_NAME} (to be implemented)`)}
+        >
+          <Trash2 className="w-4 h-4 text-white" />
+        </button>
+      </div>
+    );
+  };
 
   const defaultBodyTemplate = (rowData, col) => {
     const value = rowData[col.field];
@@ -190,10 +189,9 @@ export default function Datatable() {
         </div>
 
         <button
-          className={`w-10 h-10 flex items-center justify-center border border-slate-600 rounded-lg ${
-            loading ? "bg-slate-700 cursor-not-allowed" : "bg-slate-800 hover:bg-slate-700"
-          }`}
-          onClick={loading ? undefined : fetchTrackerData}
+          className={`w-10 h-10 flex items-center justify-center border border-slate-600 rounded-lg ${loading ? "bg-slate-700 cursor-not-allowed" : "bg-slate-800 hover:bg-slate-700"
+            }`}
+          onClick={!loading ? fetchTrackerData : undefined}
         >
           <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin text-white" : "text-slate-400"}`} />
         </button>

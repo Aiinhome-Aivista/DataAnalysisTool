@@ -43,6 +43,10 @@ export function ContextProvider({ children }) {
   const [sessionData, setSessionData] = useState({});
   const [activeSession, setActiveSession] = useState(null);
 
+  // 🔹 New: store table tracker data globally
+  const [trackerData, setTrackerData] = useState(null);
+  const [isTrackerDataLoading, setIsTrackerDataLoading] = useState(false);
+
   // 🔹 Helper to update session data
   const updateSessionData = (sessionName, newData) => {
     setSessionData(prev => ({
@@ -68,6 +72,8 @@ export function ContextProvider({ children }) {
         sessionData, setSessionData,
         activeSession, setActiveSession,
         updateSessionData, // ✅ provide helper
+        trackerData, setTrackerData, // ✅ provide tracker data
+        isTrackerDataLoading, setIsTrackerDataLoading, // ✅ provide shared loading state
       }}
     >
       {children}

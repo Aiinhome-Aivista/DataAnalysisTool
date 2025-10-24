@@ -11,7 +11,7 @@ import { POST_url } from "../../connection/connection";
 
 function UploadFiles() {
   const [sessionName, setSessionName] = useState("");
-  const { files, setFiles, setPatterns, setRelationships, setDataTypes, setInsights, setGraphUrl} = useContext(Context);
+  const { files, setFiles, setPatterns, setRelationships, setDataTypes, setInsights, setGraphUrl } = useContext(Context);
   const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
 
@@ -105,11 +105,11 @@ const handleUpload = async () => {
     return;
   }
 
-  setIsUploading(true);
+    setIsUploading(true);
 
-  const formData = new FormData();
-  formData.append("session_name", sessionName);
-  files.forEach((file) => formData.append("files", file));
+    const formData = new FormData();
+    formData.append("session_name", sessionName);
+    files.forEach((file) => formData.append("files", file));
 
   // ✅ Helper to call API safely
   const callApi = async (url, name) => {
