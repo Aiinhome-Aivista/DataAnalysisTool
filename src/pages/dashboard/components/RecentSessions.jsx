@@ -68,7 +68,7 @@ function RecentSessions() {
     };
 
     return (
-        <div className="p-6 min-w-0 border border-slate-700 rounded-lg">
+        <div className="px-6 min-w-0">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-lg">Recent Analysis Sessions</h3>
                 <button

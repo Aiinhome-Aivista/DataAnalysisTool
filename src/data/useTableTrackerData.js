@@ -8,11 +8,11 @@ import { Context } from '../common/helper/Context';
  * @returns {{data: Array, loading: boolean, fetchTrackerData: Function}}
  */
 export function useTableTrackerData() {
-    const { trackerData, setTrackerData } = useContext(Context);
-    const [loading, setLoading] = useState(!trackerData); // Only load if data is not already in context
+    const { trackerData, setTrackerData, isTrackerDataLoading, setIsTrackerDataLoading } = useContext(Context);
 
     const fetchTrackerData = async () => {
-        setLoading(true);
+        if (isTrackerDataLoading) return; // Prevent concurrent fetches
+        setIsTrackerDataLoading(true);
         try {
             const response = await apiService({ url: GET_url.TableTracker });
             if (response && response.status === 'success' && Array.isArray(response.data)) {
@@ -25,16 +25,16 @@ export function useTableTrackerData() {
             console.error("API error while fetching tracker data:", error);
             setTrackerData([]);
         } finally {
-            setLoading(false);
+            setIsTrackerDataLoading(false);
         }
     };
 
     useEffect(() => {
-        // Fetch only if data is not already present in the context
-        if (!trackerData) {
+        // Fetch only if data is not present and not already loading
+        if (!trackerData && !isTrackerDataLoading) {
             fetchTrackerData();
         }
-    }, [trackerData]); // Re-run if trackerData is reset elsewhere
+    }, []); // Only run on initial mount
 
-    return { data: trackerData || [], loading, fetchTrackerData };
+    return { data: trackerData || [], loading: isTrackerDataLoading, fetchTrackerData };
 }
