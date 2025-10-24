@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { UploadCloud, FolderOpen } from "lucide-react";
+import { UploadCloud, FolderOpen, X } from "lucide-react";
 
 function FileUploader({ files = [], setFiles }) {
   const fileInputRef = useRef(null);
@@ -9,6 +9,10 @@ function FileUploader({ files = [], setFiles }) {
     if (!newFiles) return;
     const fileArray = Array.from(newFiles);
     setFiles((prev = []) => [...prev, ...fileArray]); // fallback to empty array
+  };
+
+  const handleRemoveFile = (indexToRemove) => {
+    setFiles((prevFiles) => prevFiles.filter((_, index) => index !== indexToRemove));
   };
 
   const openFileDialog = () => fileInputRef.current?.click();
@@ -50,7 +54,14 @@ function FileUploader({ files = [], setFiles }) {
       {files.length > 0 && (
         <ul className="mt-3 text-left text-slate-300 text-sm">
           {files.map((file, idx) => (
-            <li key={idx}>📂 {file.name}</li>
+            <li key={`${file.name}-${idx}`} className="flex items-center justify-between p-1.5 hover:bg-slate-800 rounded-md">
+              <span className="truncate">
+                <span className="mr-2">📂</span>{file.name}
+              </span>
+              <button onClick={() => handleRemoveFile(idx)} className="ml-2 p-1 text-slate-400 hover:text-red-500 hover:bg-slate-700 rounded-full">
+                <X className="w-4 h-4" />
+              </button>
+            </li>
           ))}
         </ul>
       )}
