@@ -10,7 +10,8 @@ export default function AnalysisStats() {
       {/* Files Analyzed */}
       <div className="flex-1 min-w-[200px] bg-blue-600 text-white rounded-lg shadow p-6 flex flex-col items-center">
         <File className="w-8 h-8 mb-2" />
-        <h3 className="text-2xl font-bold">{Array.isArray(files) ? files.length : 0}</h3>
+        {/* <h3 className="text-2xl font-bold">{Array.isArray(files) ? files.length : 0}</h3> */}
+         <h3 className="text-2xl font-bold">2</h3>
         <p className="text-sm">Files Analyzed</p>
       </div>
 
