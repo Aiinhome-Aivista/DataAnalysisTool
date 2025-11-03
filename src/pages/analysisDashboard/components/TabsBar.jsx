@@ -19,7 +19,7 @@ export default function TabsBar() {
     //{ id: "insights", label: "Insights", icon: <Info className="w-4 h-4" /> },
     { id: "visualization", label: "Visualization", icon: <BarChart2 className="w-4 h-4" /> },
    // { id: "chat-insights", label: "Chat Insights", icon: <MessageSquare className="w-4 h-4" /> },
-    { id: "vector-insights", label: "Chat Insights", icon: <Info className="w-4 h-4" /> },
+    { id: "vector-insights", label: "Speak to your data", icon: <Info className="w-4 h-4" /> },
   ];
 
   // Simulate loading

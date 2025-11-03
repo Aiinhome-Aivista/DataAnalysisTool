@@ -5,19 +5,18 @@ import { Eye, Trash2, Search, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Loader from "../../../common/components/Loader";
 import { useTableTrackerData } from "../../../data/useTableTrackerData";
-import { GET_url } from "../../../connection/connection";
+import { GET_url, DELETE_url } from "../../../connection/connection";
 import { Context } from "../../../common/helper/Context";
 
 export default function Datatable() {
   const navigate = useNavigate();
   const { data, loading, fetchTrackerData } = useTableTrackerData();
-  const {
-    updateSessionData,
-    setActiveSession
-  } = useContext(Context);
+  const { updateSessionData, setActiveSession } = useContext(Context);
 
   const [search, setSearch] = useState("");
   const [loadingSession, setLoadingSession] = useState(null);
+  const [sessionToDelete, setSessionToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Filtered data based on search
   const filteredData = useMemo(() => {
@@ -33,7 +32,6 @@ export default function Datatable() {
     if (!sessionName) return alert("Session name missing!");
 
     setLoadingSession(sessionName);
-
     try {
       const response = await fetch(GET_url.viewInfo(sessionName));
       if (!response.ok) throw new Error("Failed to fetch session data");
@@ -54,9 +52,13 @@ export default function Datatable() {
             inferred_sql_type: colMeta.technical_metadata?.inferred_sql_type || "",
             contextual_summary: comparisonMeta.contextual_summary || "",
             technical_summary: comparisonMeta.technical_summary || "",
-            differences: Array.isArray(colMeta.differences) ? colMeta.differences.join(" | ") : "",
+            differences: Array.isArray(colMeta.differences)
+              ? colMeta.differences.join(" | ")
+              : "",
             more_accurate: colMeta.which_is_more_accurate?.selected || "",
-            confidence: `${Math.round((colMeta.contextual_metadata?.confidence || 0) * 100)}%`,
+            confidence: `${Math.round(
+              (colMeta.contextual_metadata?.confidence || 0) * 100
+            )}%`,
             sample_values: colMeta.technical_metadata?.sample_values || [],
           };
         });
@@ -64,21 +66,25 @@ export default function Datatable() {
         return { table_name: fileName, columns };
       });
 
-      // Update context for this session
-      updateSessionData(sessionName, {
+      // Update context
+      const sessionData = {
         dataTypes,
         patterns,
         relationships: responseData.relationships || [],
         insights: result?.insights?.insights || [],
         graphUrl: result?.graph_url || "",
-      });
+      };
 
+      updateSessionData(sessionName, sessionData);
       setActiveSession(sessionName);
 
-      if (result.session_id) localStorage.setItem("session_id", result.session_id);
+      // Save session in localStorage
+      if (result.session_id)
+        localStorage.setItem("session_id", result.session_id);
+      localStorage.setItem("active_session_name", sessionName);
+      localStorage.setItem("session_data", JSON.stringify(sessionData));
 
-      navigate("/analysis");
-
+      window.open("/analysis", "_blank");
     } catch (error) {
       console.error("Error fetching session data:", error);
       alert("Failed to load session details.");
@@ -87,53 +93,40 @@ export default function Datatable() {
     }
   };
 
-  //   const actionBodyTemplate = (rowData) => {
-  //     const isLoading = loadingSession === rowData.SESSION_NAME;
-  //     return (
-  //       <div className="flex gap-2">
-  //         <button
-  //           className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
-  //             isLoading ? "bg-gray-500 cursor-not-allowed" : "bg-[#795eff] hover:bg-[#6a4be8]"
-  //           }`}
-  //           disabled={!!loadingSession}
-  //           onClick={() => handleViewClick(rowData)}
-  //         >
-  //           {isLoading ? (
-  //             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-  //           ) : (
-  //             <Eye className="w-4 h-4 text-white" />
-  //           )}
-  //         </button>
-
-  //         <button
-  //           className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e]"
-  //           onClick={() => alert(`Delete ${rowData.SESSION_NAME} (to be implemented)`)}
-  //         >
-  //           <Trash2 className="w-4 h-4 text-white" />
-  //         </button>
-  //       </div>
-  //     );
-  //   };
-
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(DELETE_url.deleteSession(sessionToDelete), {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete session");
+      alert(`Session "${sessionToDelete}" deleted successfully.`);
+      fetchTrackerData();
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Error deleting session.");
+    } finally {
+      setDeleting(false);
+      setSessionToDelete(null);
+    }
+  };
 
   const actionBodyTemplate = (rowData) => {
     const isLoading = loadingSession === rowData.SESSION_NAME;
-
-    // Disable if session not completed
     const isCompleted =
       rowData.SESSION_STATUS?.toLowerCase() === "completed" ||
       rowData.SESSION_STATUS?.toLowerCase() === "success";
-
     const isDisabled = !!loadingSession || !isCompleted;
 
     return (
       <div className="flex gap-2">
-        {/* View Button */}
         <button
-          className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${isDisabled
+          className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
+            isDisabled
               ? "bg-gray-500 cursor-not-allowed"
               : "bg-[#795eff] hover:bg-[#6a4be8]"
-            }`}
+          }`}
           disabled={isDisabled}
           onClick={() => handleViewClick(rowData)}
         >
@@ -144,10 +137,9 @@ export default function Datatable() {
           )}
         </button>
 
-        {/* Delete Button */}
         <button
           className="w-8 h-8 flex items-center justify-center rounded-md bg-[#961010] hover:bg-[#7f0e0e]"
-          onClick={() => alert(`Delete ${rowData.SESSION_NAME} (to be implemented)`)}
+          onClick={() => setSessionToDelete(rowData.SESSION_NAME)}
         >
           <Trash2 className="w-4 h-4 text-white" />
         </button>
@@ -157,7 +149,8 @@ export default function Datatable() {
 
   const defaultBodyTemplate = (rowData, col) => {
     const value = rowData[col.field];
-    if (col.field === "SESSION_STATUS") return value === "Success" ? "Completed" : value || "--";
+    if (col.field === "SESSION_STATUS")
+      return value === "Success" ? "Completed" : value || "--";
     if (col.field === "RELATIONSHIPS") return "Done";
     return value || "--";
   };
@@ -175,7 +168,6 @@ export default function Datatable() {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Top Controls */}
       <div className="flex flex-row items-center justify-end mt-6 gap-4">
         <div className="relative w-1/3">
           <input
@@ -189,15 +181,21 @@ export default function Datatable() {
         </div>
 
         <button
-          className={`w-10 h-10 flex items-center justify-center border border-slate-600 rounded-lg ${loading ? "bg-slate-700 cursor-not-allowed" : "bg-slate-800 hover:bg-slate-700"
-            }`}
+          className={`w-10 h-10 flex items-center justify-center border border-slate-600 rounded-lg ${
+            loading
+              ? "bg-slate-700 cursor-not-allowed"
+              : "bg-slate-800 hover:bg-slate-700"
+          }`}
           onClick={!loading ? fetchTrackerData : undefined}
         >
-          <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin text-white" : "text-slate-400"}`} />
+          <RefreshCw
+            className={`w-5 h-5 ${
+              loading ? "animate-spin text-white" : "text-slate-400"
+            }`}
+          />
         </button>
       </div>
 
-      {/* Table */}
       <DataTable
         value={filteredData}
         paginator
@@ -213,10 +211,48 @@ export default function Datatable() {
           col.field === "action" ? (
             <Column key={col.field} header={col.header} body={actionBodyTemplate} />
           ) : (
-            <Column key={col.field} field={col.field} header={col.header} body={(row) => defaultBodyTemplate(row, col)} />
+            <Column
+              key={col.field}
+              field={col.field}
+              header={col.header}
+              body={(row) => defaultBodyTemplate(row, col)}
+            />
           )
         )}
       </DataTable>
+
+      {/* ✅ Confirmation Modal*/}
+      {sessionToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-slate-800 border border-slate-600 rounded-xl shadow-lg p-6 w-96 text-center">
+            <h2 className="text-lg font-semibold text-white mb-4">
+              Delete Session
+            </h2>
+            <p className="text-slate-300 mb-6">
+              Are you sure you want to delete <br />
+              <span className="font-bold text-[#ff7676]">{sessionToDelete}</span>?
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white"
+                onClick={() => setSessionToDelete(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg bg-[#961010] hover:bg-[#7f0e0e] text-white ${
+                  deleting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+                onClick={handleDeleteSession}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
