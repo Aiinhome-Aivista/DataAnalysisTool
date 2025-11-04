@@ -139,6 +139,11 @@ function UploadFiles() {
   // ✅ Step 2: Run background async chain
   (async () => {
     try {
+          const uploadtableres = await callApi(POST_url.uploadtable, "Uploads table API");
+      if (!uploadtableres) {
+        console.warn("⚠️ Uploads table API failed ");
+        return;
+      }
       // 1️⃣ DataTypes API
       const dataTypesRes = await callApi(POST_url.dataTypes, "Data Types API");
       if (dataTypesRes?.results?.files) {

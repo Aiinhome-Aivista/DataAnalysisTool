@@ -1,5 +1,5 @@
 const API_BASE_URL = "http://122.163.121.176:3029"
-const API_BASE_URL2 = "http://127.0.0.1:5001"
+// const API_BASE_URL2 = "http://127.0.0.1:5001"
 
 export const POST_url = {
     dataTypes: `${API_BASE_URL}/analyze_files`,
@@ -7,6 +7,7 @@ export const POST_url = {
     insights: `${API_BASE_URL}/insight`,
     relationships: `${API_BASE_URL}/relationships`,
     uploads: `${API_BASE_URL}/upload`,
+    uploadtable: `${API_BASE_URL}/upload_files_count`,
 };
 
 export const GET_url = {
@@ -17,5 +18,5 @@ export const GET_url = {
 // DELETE endpoints
 export const DELETE_url = {
   deleteSession: (sessionName) =>
-    `${API_BASE_URL2}/delete_session/${sessionName}`,
+    `${API_BASE_URL}/delete_session/${sessionName}`,
 };

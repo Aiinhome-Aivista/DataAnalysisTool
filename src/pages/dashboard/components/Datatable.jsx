@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useContext } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -18,15 +19,18 @@ export default function Datatable() {
   const [sessionToDelete, setSessionToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Filtered data based on search
+  // ✅ Filtered data based on search
   const filteredData = useMemo(() => {
     if (!search.trim()) return data;
     const lower = search.toLowerCase();
-    return data.filter(item =>
-      Object.values(item).some(val => String(val).toLowerCase().includes(lower))
+    return data.filter((item) =>
+      Object.values(item).some((val) =>
+        String(val).toLowerCase().includes(lower)
+      )
     );
   }, [data, search]);
 
+  // ✅ View session details
   const handleViewClick = async (rowData) => {
     const sessionName = rowData.SESSION_NAME;
     if (!sessionName) return alert("Session name missing!");
@@ -46,10 +50,12 @@ export default function Datatable() {
         patterns[fileName] = fileData.comparison || {};
 
         const columns = Object.values(fileData.metadata || {}).map((colMeta) => {
-          const comparisonMeta = fileData.comparison?.[colMeta.column_name] || {};
+          const comparisonMeta =
+            fileData.comparison?.[colMeta.column_name] || {};
           return {
             column_name: colMeta.column_name,
-            inferred_sql_type: colMeta.technical_metadata?.inferred_sql_type || "",
+            inferred_sql_type:
+              colMeta.technical_metadata?.inferred_sql_type || "",
             contextual_summary: comparisonMeta.contextual_summary || "",
             technical_summary: comparisonMeta.technical_summary || "",
             differences: Array.isArray(colMeta.differences)
@@ -66,7 +72,7 @@ export default function Datatable() {
         return { table_name: fileName, columns };
       });
 
-      // Update context
+      // ✅ Update context data
       const sessionData = {
         dataTypes,
         patterns,
@@ -78,7 +84,7 @@ export default function Datatable() {
       updateSessionData(sessionName, sessionData);
       setActiveSession(sessionName);
 
-      // Save session in localStorage
+      // ✅ Save session locally
       if (result.session_id)
         localStorage.setItem("session_id", result.session_id);
       localStorage.setItem("active_session_name", sessionName);
@@ -93,6 +99,7 @@ export default function Datatable() {
     }
   };
 
+  // ✅ Delete session handler
   const handleDeleteSession = async () => {
     if (!sessionToDelete) return;
     setDeleting(true);
@@ -112,6 +119,7 @@ export default function Datatable() {
     }
   };
 
+  // ✅ Action buttons for each row
   const actionBodyTemplate = (rowData) => {
     const isLoading = loadingSession === rowData.SESSION_NAME;
     const isCompleted =
@@ -147,17 +155,20 @@ export default function Datatable() {
     );
   };
 
+  // ✅ Custom cell rendering
   const defaultBodyTemplate = (rowData, col) => {
     const value = rowData[col.field];
     if (col.field === "SESSION_STATUS")
       return value === "Success" ? "Completed" : value || "--";
     if (col.field === "RELATIONSHIPS") return "Done";
+    if (col.field === "Tables_name") return value || "--"; // ✅ Fix for Table Names
     return value || "--";
   };
 
+  // ✅ Define columns (Tables_name bound correctly)
   const columns = [
     { field: "SESSION_NAME", header: "Session Name" },
-    { field: "TABLE_NAME", header: "Table Name" },
+    { field: "Tables_name", header: "Table Name" }, // ✅ Fixed field name
     { field: "DATA_TYPE_ANALYZER", header: "Datatypes" },
     { field: "RELATIONSHIPS", header: "Relationships" },
     { field: "VISUALIZATION", header: "Visualization" },
@@ -168,6 +179,7 @@ export default function Datatable() {
 
   return (
     <div className="flex flex-col gap-4 w-full">
+      {/* 🔍 Search & Refresh */}
       <div className="flex flex-row items-center justify-end mt-6 gap-4">
         <div className="relative w-1/3">
           <input
@@ -196,6 +208,7 @@ export default function Datatable() {
         </button>
       </div>
 
+      {/* 📋 Main DataTable */}
       <DataTable
         value={filteredData}
         paginator
@@ -209,7 +222,11 @@ export default function Datatable() {
       >
         {columns.map((col) =>
           col.field === "action" ? (
-            <Column key={col.field} header={col.header} body={actionBodyTemplate} />
+            <Column
+              key={col.field}
+              header={col.header}
+              body={actionBodyTemplate}
+            />
           ) : (
             <Column
               key={col.field}
@@ -221,7 +238,7 @@ export default function Datatable() {
         )}
       </DataTable>
 
-      {/* ✅ Confirmation Modal*/}
+      {/* 🗑️ Confirmation Modal */}
       {sessionToDelete && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-slate-800 border border-slate-600 rounded-xl shadow-lg p-6 w-96 text-center">
